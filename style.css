@@ -1,0 +1,7 @@
+.loading{
+		background: url("img/ajax-loader.gif") no-repeat transparent scroll center center;
+		height: 16px;
+		width:16px;
+		display:inline-block;
+		vertical-align:middle;
+}

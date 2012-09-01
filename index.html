@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Follow the sheep</title>
+		<meta charset="utf-8" />
+		<script type="text/javascript" src="config.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="./css/bootstrap.min.css" type="text/css" />
+		<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.css" />
+		<!--[if lte IE 8]>
+				<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.ie.css" />
+				<![endif]-->
+	</head>
+	<body class="container">
+		<div class="form-inline">
+			<div id="nameDiv" class="control-group">
+				<label>Name <span class="help-required" title="Required">*</span> </label><input id="name" placeholder="John Doe" type="text"/>
+			</div>
+			<div id="emailDiv" class="control-group">
+				<label>Email <span class="help-required" title="Required">*</span> </label><input id="email" placeholder="john@doe.com" type="text"/>
+			</div>
+		</div>
+		<div id="map" style="width: 600px; height: 400px; margin-top:30px;"></div>
+
+		<script src="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.js"></script>
+		<script>
+			var geojson = {};
+			var map = L.map('map').setView([12.9725, 77.58443], 13);
+
+			L.tileLayer('http://{s}.tile.cloudmade.com/157f9082094e402f89d242e9b9144483/997/256/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery Â©<a href="http://cloudmade.com">CloudMade</a>'
+			}).addTo(map);
+
+			var popup = L.popup();
+			var flag = true;
+			var mark = '';
+
+			function onMapClick(e) {
+			if(flag)
+			{
+			mark = L.marker(e.latlng);
+			mark.addTo(map);
+			flag = false;
+			}
+			else
+			{
+			mark.setLatLng(e.latlng);
+			}
+			geojson.lat = e.latlng['lat'];
+			geojson.lng = e.latlng['lng'];
+			}
+
+			map.on('click', onMapClick);
+			$.getJSON("http://"+config.url+"/app/fetch",function(data){
+			$.each(data,function(i,val){
+			latlng = new L.LatLng(data[i]['lat'],data[i]['lng'])
+			mark = L.marker(latlng,{'title':data[i]['name']}).addTo(map);
+			});
+			});
+
+			function submit()
+			{
+			$('.loading').removeClass('hidden');
+			var sflag = true;
+			if($('#name').val() == '')
+			{
+			$('.loading').addClass('hidden');
+			sflag = false;
+			$('#nameDiv').addClass('error');
+			}
+			if($('#email').val() == '')
+			{
+			sflag = false;
+			$('.loading').addClass('hidden');
+			$('#emailDiv').addClass('error');
+			}
+			if(geojson.lng == undefined || geojson.lat == undefined)
+			{
+			sflag = false;
+			$('.loading').addClass('hidden');
+			$("#alert").show();
+			}
+			if(sflag)
+			{
+			d = {};
+			d['name'] = $('#name').val();
+			d['email'] = $('#email').val();
+			d['lat'] = geojson.lat;
+			d['lng'] = geojson.lng;
+			$.post("http://"+config.url+"/app/submit",d,function(){
+			$('.loading').addClass('hidden');
+			$('#alertJoin').show();
+			});
+			}
+			}
+			function closeAlert(id)
+			{
+			$('#'+id).hide();
+			}
+		</script>
+		<div id="alert" class="alert" style="display:none;">
+			<button type="button" class="close" data-dismiss="alert" onclick="closeAlert(this.parentNode.id);">x</button>
+			<p>Please choose your location</p>
+		</div>
+</div>
+<input type="button" class="btn btn-primary" value="Am coming" onclick="submit();" style="margin-top:10px;"/>
+<span class="loading hidden"></span>
+<div id="alertJoin" class="alert" style="display:none;">
+	<button type="button" class="close" data-dismiss="alert" onclick="closeAlert(this.parentNode.id);">x</button>
+	<p>You have successfuly joined.</p>
+</div>
+</body>
+</html>
