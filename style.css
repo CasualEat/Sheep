@@ -5,3 +5,9 @@
 		display:inline-block;
 		vertical-align:middle;
 }
+.content{
+		text-align:justify;
+}
+body{
+		background:url("img/bg.jpg");
+}
