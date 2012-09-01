@@ -8,6 +8,9 @@
 .content{
 		text-align:justify;
 }
+h1, h3{
+		color:#32a5dd;
+}
 body{
 		background:url("img/bg.jpg");
 }
